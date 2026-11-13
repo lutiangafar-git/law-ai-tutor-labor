@@ -18,7 +18,7 @@ export function BankDrill({ outline }: { outline: OutlineItem[] }) {
 
   const titleOf = useMemo(() => new Map(outline.map((o) => [o.code, o.title])), [outline]);
   const inYear = (o: OutlineItem) => year === "All" || o.year === year;
-  const areas = outline.filter((o) => o.level === 1 && outline.some((x) => x.leaf && inYear(x) && x.code.startsWith(o.code + ".")));
+  const areas = outline.filter((o) => o.level === 1 && outline.some((x) => x.leaf && x.count > 0 && inYear(x) && x.code.startsWith(o.code + ".")));
   const lines = area ? outline.filter((o) => o.leaf && o.count > 0 && inYear(o) && o.code.startsWith(area + ".")) : [];
 
   async function start() {
@@ -84,7 +84,7 @@ export function BankDrill({ outline }: { outline: OutlineItem[] }) {
             setLine("");
           }}
         >
-          {YEARS.filter((y) => y === "All" || outline.some((o) => o.leaf && o.year === y)).map((y) => (
+          {YEARS.filter((y) => y === "All" || outline.some((o) => o.leaf && o.count > 0 && o.year === y)).map((y) => (
             <option key={y} value={y}>
               {y === "All" ? "All years (Year 4 and bar review)" : `Year ${y.slice(1)} topics`}
             </option>
