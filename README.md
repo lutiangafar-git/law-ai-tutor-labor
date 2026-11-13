@@ -1,0 +1,168 @@
+# Law AI Tutor - Commercial: Socratic Commercial Law Practice
+
+[![CI](https://github.com/lutiangafar-git/law-ai-tutor-commercial/actions/workflows/test.yml/badge.svg)](https://github.com/lutiangafar-git/law-ai-tutor-commercial/actions/workflows/test.yml)
+
+**Live app:** https://law-ai-tutor-commercial.vercel.app
+**Demo video (2 min):** _link added at submission_
+**Course:** Week 4 Graded Mini Project 4.2, AI-Powered Web Application
+
+An AI tutor for **Philippine law students and bar reviewees** in **Commercial Law** that makes you **answer first**, then scores your
+bar-style answer on **Answer, Legal basis, Application and Conclusion (ALAC)**, coaches the weakest part, and
+uses **only reviewed Philippine sources**. It never invents a citation. Its usage rules follow school AI
+policies: Year 1–2 students are paused during class hours, and Year 3–4 students get a quick in-class check.
+
+> **Why:** UP Law restricted AI in first-year core subjects in 2026, citing weaker reasoning. About 54% of 2025
+> bar examinees were repeaters or refreshers, and general chatbots give answers away and can invent
+> Philippine citations. See the [validation report](docs/01-idea-validation-report.md).
+
+## What it does
+
+| Who | Commercial Law topics | When |
+|---|---|---|
+| Year 2 student | Corporations; Partnership; Insurance; Transportation; Intellectual Property | After class only (paused in class hours); quiz + drills |
+| Year 3 student | Foreign Investments; Banking; Anti-Money Laundering; Securities Regulation; Competition Law | In class (Quick Check) and after |
+| Year 4 student | All Commercial Law topics in the 2027 Bar syllabus | In class (Quick Check) and after |
+| Bar reviewee (first-time or repeater) | All Commercial Law topics in the 2027 Bar syllabus | Anytime; repeaters start with a diagnostic |
+
+**Register first.** Page 1 shows one **Register** button (or **Continue** for a returning user). Registering asks
+*"Which describes you?"* (Law student Year 1–2, Law student Year 3–4, or Bar reviewee), then the exact year, or, for
+bar reviewees, *"Have you taken the Bar exam before?"* (No = first-time taker, Yes = repeater). The user then lands on
+their category's own page: `/year-1-2`, `/year-3-4` or `/bar`. **Repeater status is confidential:** it stays on the
+device, is never shown on screen (everyone sees "Bar reviewee") and never appears in a web address. There is no
+account or password in v1. Years with no Commercial Law topics are not offered. Topics are limited to the **Syllabus for the 2027 Bar Examinations
+(Commercial and Taxation Laws, Commercial Law part (I to VI))**, Bar Bulletin No. 1-2027. **Year 1–2** work through their topics in syllabus order (the drills
+page suggests the next unfinished one); **Year 3–4 and bar reviewees** get random topics to test general knowledge.
+
+**Year 1–2 only: objective and multiple-choice quiz.** Four short questions per topic, checked by the app
+itself (no AI call, so it is instant and free). Each wrong try brings the next hint; once the hints run out,
+wrong options are removed or the answer's first letters are shown, so every student reaches the right answer.
+Year 3–4 and bar reviewees don't get objective questions: they practise essay-style answers only.
+
+**Three AI features**
+1. **Recitation drill:** five Socratic steps (facts → issue → rule → reasoning → application), each scored 0–2. Asking "just tell me" gets you a hint, not the answer.
+2. **In-class Quick Check (Year 3–4 only):** type your recitation first, then get one reply with what's right, what's missing and the citation. It never writes a script to read aloud.
+3. **Problem drill:** an **original bar-style problem** written for this app (the past bar exam that raised the same issue is noted) → **Practice score out of 5** → coaching on your first weak ALAC part → rewrite → re-score → model answer. Weak spots are tracked across drills.
+
+**How problem drills are scored (5-point bar-coach rubric, organised by ALAC).** Claude only *labels* each part
+of your answer (correct / incorrect / not stated) and checks that you answered the question actually asked. The
+score is then computed in code (`lib/rubric.ts`), so the same labels always give the same score:
+
+| Points | Answer (conclusion) | Legal basis (rule) | Application |
+|---|---|---|---|
+| 5 | correct | correct | correct |
+| 4 | correct | correct | incorrect or missing |
+| 3 | correct · or incorrect | incorrect (but applied) · or correct | stated · or misapplied |
+| 2 | correct · or incorrect | incorrect | not applied · or applied |
+| 1 | incorrect · or any | stated but not applied · or **no rule** (facts only) | missing · or any |
+| 0 | **no conclusion**, or an answer to a different issue | any | any |
+
+**Trust rules:** the AI sees only the topic's source file. Questions outside it get *"That's outside the
+reviewed materials for this drill."* Every score is labelled **"Practice score"**, never official bar grading.
+
+> ⚠️ **Demo content.** The ten current topics (Revised Corporation Code Sec. 30; Civil Code Arts. 1767/1769 and 1733–1735; Insurance Code Secs. 13–19; IP Code Secs. 147.1/155.1; Foreign Investments Act Secs. 3(a)/5; RA 1405 Sec. 2; AMLA Secs. 3(b)/9(c); SRC Secs. 3.1/8.1; Competition Act Sec. 14) are marked **"Demo content: pending lawyer
+> review"** in the app until a law-trained reviewer signs them off. Do not rely on them as legal advice.
+
+## Sister apps
+- **Law AI Tutor - Civil**: https://law-ai-tutor-civil.vercel.app
+- **Law AI Tutor - Commercial** (this app): https://law-ai-tutor-commercial.vercel.app
+- **Law AI Tutor - Taxation**: https://law-ai-tutor-taxation.vercel.app
+
+## Tech stack
+Next.js 15 (App Router) · TypeScript · Tailwind CSS 4 · Anthropic Claude API (`claude-haiku-5-5` for fast turns,
+`claude-sonnet-5-5` for ALAC labelling) · Vitest · GitHub Actions · Vercel (hosting and Web Analytics).
+No database and no login: progress stays in the user's browser.
+
+## Run it on your computer
+Requirements: Node.js 20+ and an Anthropic API key.
+
+```bash
+git clone https://github.com/lutiangafar-git/law-ai-tutor-commercial.git
+cd law-ai-tutor-commercial
+npm install
+cp .env.example .env.local      # then paste your key after ANTHROPIC_API_KEY=
+npm run dev                     # open http://localhost:3000
+```
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start the app locally |
+| `npm test` | Run the 75 automated tests (the Claude API is faked; no key needed) |
+| `npm run lint` | Check code style |
+| `npx tsc --noEmit` | Check types |
+| `npm run build` | Production build (what Vercel runs) |
+
+## Environment variables and secrets
+
+| Variable | Where it lives | Used by |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | `.env.local` on your computer (git-ignored) and Vercel → Settings → Environment Variables | `app/api/tutor/route.ts` only, on the server |
+| `REVIEWER_CODE` | Same places. At least 8 characters; leave unset to switch the reviewer page off | `/review` and `app/api/review/*`, on the server |
+| `GITHUB_TOKEN` | Vercel only. A fine-grained GitHub token for this one repository with *Contents: read and write* | `app/api/review/publish` (Approve and publish) |
+| `GITHUB_REPO` | Vercel only, e.g. `lutiangafar-git/law-ai-tutor-civil` | same |
+
+There are no secrets in the code or the Git history. `.env*.local` is git-ignored, `.env.example` is an empty
+template, and CI runs a **Gitleaks** scan over the full history on every push. The key is never sent to the browser.
+
+## CI/CD
+- **GitHub Actions** ([`.github/workflows/test.yml`](.github/workflows/test.yml)), on every push and pull request: lint → typecheck → 75 tests → production build, plus a Gitleaks secret scan.
+- **Vercel** deploys `main` automatically to https://law-ai-tutor-commercial.vercel.app after each push.
+- **Monitoring:** Vercel Web Analytics (page views, no cookies); one JSON log line per Claude call (feature, model, latency, outcome; never student text) in Vercel → Logs; health check at [`/api/health`](https://law-ai-tutor-commercial.vercel.app/api/health).
+
+## Project documents
+| Document | What's in it |
+|---|---|
+| [docs/01-idea-validation-report.md](docs/01-idea-validation-report.md) | All 7 validation steps with evidence, "why now" and target user |
+| [docs/02-prd.md](docs/02-prd.md) | One-page PRD with acceptance criteria for each feature |
+| [spec.md](spec.md) | Full spec: context, inputs/outputs, behavior rules, constraints, 62 acceptance criteria, revision log |
+| [docs/03-architecture.md](docs/03-architecture.md) | Architecture diagram, data flow, design decisions, security |
+| [CLAUDE.md](CLAUDE.md) · [agents.md](agents.md) · [.cursorrules](.cursorrules) | Rules for AI coding tools (Claude Code, other agents, Cursor) |
+| [docs/04-reflection.md](docs/04-reflection.md) | What I learned, challenges, v2 improvements |
+| [docs/05-demo-script.md](docs/05-demo-script.md) | Script for the 2-minute demo |
+
+## Project structure
+```
+app/            pages (landing, drills, recitation, quick check, problem, progress, settings) + API routes (tutor, topics, health)
+components/     UI pieces (DemoBanner, FeatureCard, AnswerBox, ClassPauseBanner, GroupGuard)
+lib/            subject settings (subject.ts), access rules, year profiles, topic loader, prompts, on-device storage, monitoring
+sources/        one Markdown file per topic: legal text, key points, fact pattern, bar-style problem, model answer
+tests/          Vitest tests mapped to the spec's acceptance criteria
+docs/           validation, PRD, architecture, reflection, demo script
+```
+
+## Adding or reviewing a topic
+Copy `sources/_TEMPLATE.md`, fill in every section, and set `yearLevels` to match the year plan in `lib/subject.ts` (e.g. `[year-2, year-4, bar]`).
+While it is unreviewed, add `status: demo`. A law-trained reviewer then fills `reviewedBy` and `lastReviewed`
+and deletes `status: demo`. A file with neither is hidden. `npm test` checks that every topic file is complete.
+
+### Drafting a topic from a new Supreme Court decision (`/review`)
+For lawyer reviewers only, behind the `REVIEWER_CODE` passcode (the page is not linked anywhere and is hidden from search engines).
+1. Give the decision: a LawPhil (`lawphil.net`) or SC E-Library (`elibrary.judiciary.gov.ph`) link, an uploaded
+   PDF / HTML / text file, or pasted text. Only those two sites are ever fetched.
+2. Optionally type the case title, G.R. number and date; anything left blank is read from the decision. The app
+   says whether the decision is within the Bar cut-off in `lib/barExam.ts` (later ones are kept for the next Bar).
+3. Claude drafts one topic from the main opinion only, in the template's format, with new facts. The page shows
+   "Your draft is ready" (and the browser tab title changes) when it is done, in about a minute.
+4. Code checks the draft: every quoted line must be word for word in the decision (or the Code text in
+   *Source text*); every case must carry its **title, G.R. number and date**; the subject, year levels, syllabus
+   year and quiz are complete; and the problem does not copy the decision's facts.
+5. The reviewer edits the draft on the page and re-checks it. Then they type their name, tick that they checked
+   the law, and click **Approve and publish**: the app writes `reviewedBy` and today's date (Philippine time),
+   removes `status: draft`, and saves the file to `sources/` on GitHub through `GITHUB_TOKEN`. Vercel redeploys,
+   so the topic is live for students in about two minutes. It never overwrites an existing topic. Without the
+   GitHub settings, the reviewer can download the approved file instead.
+
+Model answers are written like a Bar answer in Examplify: four plain paragraphs starting
+`(Answer)`, `(Legal basis)`, `(Application)` and `(Conclusion)`.
+
+## Known limitations (v1)
+- Content is ten demo topics in Commercial Law; lawyer sign-off is pending.
+- The 30-messages-per-hour limit is per device, not per server (to fix before a real pilot).
+- The user's group is self-declared (honor system); school-managed settings come later.
+- Progress doesn't sync across devices (no accounts, by design).
+
+v2 ideas are tracked in [GitHub Issues](https://github.com/lutiangafar-git/law-ai-tutor-commercial/issues).
+
+## How AI was used to build this
+The spec, rules files and code were written with **Cursor** and **Claude Code**, following `CLAUDE.md`. All
+code changes were reviewed, tested (`npm test`) and committed in small steps. Legal content is kept apart
+from code, in `sources/`, for human review.
